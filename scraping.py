@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 import time
+from io import StringIO
 
 years = list(range(2024, 2022, -1))
 all_matches = []
@@ -25,7 +26,7 @@ for year in years:
         try:
             data = requests.get(team_url)
             time.sleep(6.5)
-            matches = pd.read_html(data.text, match="Scores & Fixtures")[0]
+            matches = pd.read_html(StringIO(data.text), match="Scores & Fixtures")[0]
             
             soup = BeautifulSoup(data.text, features="lxml")
             links = soup.find_all('a')
@@ -35,13 +36,13 @@ for year in years:
             poss_links = [l for l in links if l and 'all_comps/possession/' in l]
         
             data = requests.get(f"https://fbref.com{shooting_links[0]}")
-            shooting = pd.read_html(data.text, match="Shooting")[0]
+            shooting = pd.read_html(StringIO(data.text), match="Shooting")[0]
             shooting.columns = shooting.columns.droplevel()        
             team_data = matches.merge(shooting[["Date", "Sh", "SoT", "Dist", "FK", "PK", "PKatt"]], on="Date")
             time.sleep(6.5)
             
             data = requests.get(f"https://fbref.com{passing_links[0]}")
-            passing = pd.read_html(data.text, match="Passing")[0]
+            passing = pd.read_html(StringIO(data.text), match="Passing")[0]
             passing.columns = passing.columns.droplevel()
             cols = pd.Series(passing.columns)
             passing.columns = cols.where(~cols.duplicated(), cols + '_' + cols.groupby(cols).cumcount().astype('str'))
@@ -49,7 +50,7 @@ for year in years:
             time.sleep(6.5)
             
             data = requests.get(f"https://fbref.com{poss_links[0]}")
-            possession = pd.read_html(data.text, match="Possession")[0]
+            possession = pd.read_html(StringIO(data.text), match="Possession")[0]
             possession.columns = possession.columns.droplevel()
             team_data = team_data.merge(possession[["Date", "Poss", "Touches", "Att 3rd", "Att Pen", "Succ%"]], on="Date")
             time.sleep(6.5)
