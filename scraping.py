@@ -4,7 +4,7 @@ import pandas as pd
 import time
 from io import StringIO
 
-years = list(range(2024, 2022, -1))
+years = list(range(2024, 2020, -1))
 all_matches = []
 standings_url = "https://fbref.com/en/comps/9/Premier-League-Stats"
 for year in years:
@@ -22,6 +22,7 @@ for year in years:
     
     for team_url in team_urls:
         team_name = team_url.split("/")[-1].replace("-Stats", "").replace("-", " ")
+        print(team_name, year)
         
         try:
             data = requests.get(team_url)
